@@ -1,2 +1,0 @@
-# EndOfTheRainbow
-STG Project
