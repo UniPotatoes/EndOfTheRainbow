@@ -3,19 +3,26 @@ using System.Collections;
 
 public class CharacterMovement : MonoBehaviour
 {
-    public float VerticalSpeed = 10f; //vertical movement speed
+    //moving
+    public float horizontalSpeed = 10f; //horizontal movement speed
+    
+    //wall checking
+    public Transform wallCheckUR, wallCheckBR, wallCheckUL, wallCheckBL;
+    [SerializeField]private bool walled;
 
-    [SerializeField]private bool grounded = false; //is it on the ground
+    //ground checking
     public Transform groundCheck; //groundCheck object
-    float groundRadius = 0.2f;
     public LayerMask whatIsGround; //define what is treated like ground
+    float groundRadius = 0.2f;
+    [SerializeField]private bool grounded = false; //is it on the ground
+
+    //jumping
     public int jumpForce = 2; //jump modifier
     public int maxJumpForce = 700; //maximum jump force (not working now)
-
-    private Rigidbody2D rigidBody; //rigidbody which will jump
+    public float mouseX, mouseY; //mouse coordinates on screen
     float jumpNowY;
     float jumpNowX;
-    public float mouseX, mouseY; //mouse coordinates on screen
+    private Rigidbody2D rigidBody; //rigidbody which will jump
     [SerializeField]private float relativeMouseX, relativeMouseY; //mouse coordinates relative to the object
 
 
@@ -35,10 +42,16 @@ public class CharacterMovement : MonoBehaviour
     void FixedUpdate()
     {
         grounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, whatIsGround); //checks if GroundCheck object is colliding with something
+        walled = (Physics2D.OverlapArea(wallCheckUR.position, wallCheckBR.position, whatIsGround) || Physics2D.OverlapArea(wallCheckUL.position, wallCheckBL.position, whatIsGround)) && !grounded;
 
         if (grounded) //Horizontal movement
         {
             Move();
+        }
+
+        if (walled)
+        {
+            rigidBody.velocity = new Vector2(-rigidBody.velocity.x, rigidBody.velocity.y);
         }
 
         
@@ -63,6 +76,6 @@ public class CharacterMovement : MonoBehaviour
     void Move()
     {
         float move = Input.GetAxis("Horizontal"); //poruszanie się w poziomie
-        rigidBody.velocity = new Vector2(move * VerticalSpeed, rigidBody.velocity.y);
+        rigidBody.velocity = new Vector2(move * horizontalSpeed, rigidBody.velocity.y);
     }
 }
