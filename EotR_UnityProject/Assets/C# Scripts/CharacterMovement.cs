@@ -13,7 +13,7 @@ public class CharacterMovement : MonoBehaviour
     //ground checking
     public Transform groundCheck; //groundCheck object
     public LayerMask whatIsGround; //define what is treated like ground
-    float groundRadius = 0.2f;
+    float groundRadius = 0.1f;
     [SerializeField]private bool grounded = false; //is it on the ground
 
     //jumping
@@ -25,10 +25,14 @@ public class CharacterMovement : MonoBehaviour
     private Rigidbody2D rigidBody; //rigidbody which will jump
     [SerializeField]private float relativeMouseX, relativeMouseY; //mouse coordinates relative to the object
 
+    //facing
+    public bool facingRight = true;
+    Animator anim;
 
     void Start ()
     {
 		rigidBody = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
 	}
 
 	void Update ()
@@ -36,6 +40,24 @@ public class CharacterMovement : MonoBehaviour
         if(grounded && Input.GetKeyDown(KeyCode.Mouse0)) //if it is on the ground then jump when key is pressed
         {
             Jump();
+            anim.SetTrigger("Jump");
+        }
+
+        if (grounded)
+        {
+            anim.SetTrigger("Land");
+        }
+
+        if (rigidBody.velocity.x < 0)
+        {
+            facingRight = false;
+        }
+        else
+        {
+            if (rigidBody.velocity.x > 0)
+            {
+                facingRight = true;
+            }
         }
 	
 	}
@@ -54,8 +76,19 @@ public class CharacterMovement : MonoBehaviour
             rigidBody.velocity = new Vector2(-rigidBody.velocity.x, rigidBody.velocity.y);
         }
 
-        
+        if (rigidBody.velocity.x > 0 && facingRight == false)
+        {
+            Flip();
+        }
+        else
+        {
+            if (rigidBody.velocity.x < 0 && facingRight == true)
+            {
+                Flip();
+            }
+        }
     }
+
     void Jump()
     {
         //stuff needed for jumping
@@ -77,5 +110,12 @@ public class CharacterMovement : MonoBehaviour
     {
         float move = Input.GetAxis("Horizontal"); //poruszanie się w poziomie
         rigidBody.velocity = new Vector2(move * horizontalSpeed, rigidBody.velocity.y);
+    }
+    void Flip()
+    {
+        facingRight = !facingRight;
+        Vector3 theScale = transform.localScale;
+        theScale.x *= -1;
+        transform.localScale = theScale; 
     }
 }
