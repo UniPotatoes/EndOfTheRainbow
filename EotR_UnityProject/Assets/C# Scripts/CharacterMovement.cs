@@ -64,14 +64,20 @@ public class CharacterMovement : MonoBehaviour
     void FixedUpdate()
     {
         grounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, whatIsGround); //checks if GroundCheck object is colliding with something
-        walled = (Physics2D.OverlapArea(wallCheckUR.position, wallCheckBR.position, whatIsGround) || Physics2D.OverlapArea(wallCheckUL.position, wallCheckBL.position, whatIsGround)) && !grounded;
+		walled = Physics2D.OverlapArea (wallCheckUR.position, wallCheckBR.position, whatIsGround);
+
+		if (!walled) 
+		{
+			walled = Physics2D.OverlapArea(wallCheckUL.position, wallCheckBL.position, whatIsGround);
+		}
+
 
         if (grounded) //Horizontal movement
         {
             Move();
         }
 
-        if (walled)
+		if (walled && !grounded)
         {
             rigidBody.velocity = new Vector2(-rigidBody.velocity.x, rigidBody.velocity.y);
         }

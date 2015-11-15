@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: ea7f2a653a4708342b21c2602d3498e7
-timeCreated: 1447603688
+timeCreated: 1447616818
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -40,7 +40,6 @@ TextureImporter:
   lightmap: 0
   rGBM: 0
   compressionQuality: 50
-  allowsAlphaSplitting: 0
   spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
@@ -66,20 +65,20 @@ TextureImporter:
     - name: WalkRightUnipotatoe_1
       rect:
         serializedVersion: 2
-        x: 402
+        x: 399
         y: 0
-        width: 293
-        height: 179
+        width: 296
+        height: 188
       alignment: 0
       pivot: {x: .5, y: .5}
       border: {x: 0, y: 0, z: 0, w: 0}
     - name: WalkRightUnipotatoe_2
       rect:
         serializedVersion: 2
-        x: 800
+        x: 801
         y: 0
-        width: 295
-        height: 167
+        width: 294
+        height: 188
       alignment: 0
       pivot: {x: .5, y: .5}
       border: {x: 0, y: 0, z: 0, w: 0}
