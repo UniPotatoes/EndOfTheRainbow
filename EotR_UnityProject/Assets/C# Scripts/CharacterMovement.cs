@@ -5,10 +5,8 @@ public class CharacterMovement : MonoBehaviour
 {
 	//--------------------
 	//	Debuggin
-	public velocityX;
-	public velocityY;
-
-
+	public float velocityX;
+	public float velocityY;
 	//-----------------
 
 
@@ -46,24 +44,43 @@ public class CharacterMovement : MonoBehaviour
 
 	void Update ()
     {
-        if (grounded && Input.GetKeyDown (KeyCode.Mouse0)) { //if it is on the ground then jump when key is pressed
-			anim.SetTrigger ("Jump");
-			Jump ();
-		} else {
-			if (grounded) {
-				anim.SetTrigger ("Land");
-			}
+        //--------------------
+        //	Debuggin
+        velocityX = rigidBody.velocity.x;
+        velocityY = rigidBody.velocity.y;
+	    //-----------------
+
+        if (grounded && Input.GetKeyDown (KeyCode.Mouse0)) //if it is on the ground then jump when key is pressed
+        {
+            anim.SetTrigger("jumped");
+            Jump();
+        }
+		
+		if (grounded)
+        {
+			anim.SetBool ("onLand", true);
 		}
+        else
+            {
+                anim.SetBool("onLand", false);          
+            }
+		
 
         if (rigidBody.velocity.x < 0)
         {
             facingRight = false;
+            anim.SetBool("walking", true);
         }
         else
         {
             if (rigidBody.velocity.x > 0)
             {
                 facingRight = true;
+                anim.SetBool("walking", true);
+            }
+            else
+            {
+                anim.SetBool("walking", false);
             }
         }
 			
@@ -82,9 +99,10 @@ public class CharacterMovement : MonoBehaviour
 		if (walled)
         {
 			walled = false;
-			rigidBody.velocity = new Vector2(-rigidBody.velocity.x, rigidBody.velocity.x);
+			rigidBody.velocity = new Vector2(-rigidBody.velocity.x, rigidBody.velocity.y);
         }
 
+        
 		if (rigidBody.velocity.x > 0 && facingRight == false)
 		{
 			Flip();
@@ -94,9 +112,24 @@ public class CharacterMovement : MonoBehaviour
 		{
 			Flip();
 		}
+        
+        /*
+        if (rigidBody.velocity.x > 0)
+		{
+            anim.SetBool("facingRight", true);
+        }
+        else
+        {
+            if (rigidBody.velocity.x < 0)
+            {
+                anim.SetBool("facingRight", false);
+            }
+        }
+        */
+    
     }
 
-	bool CheckForGround ()
+    bool CheckForGround ()
 	{
 		if (Physics2D.OverlapCircle (groundCheck.position, groundRadius, whatIsGround) != null) 
 		{
