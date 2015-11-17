@@ -3,6 +3,15 @@ using System.Collections;
 
 public class CharacterMovement : MonoBehaviour
 {
+	//--------------------
+	//	Debuggin
+	public velocityX;
+	public velocityY;
+
+
+	//-----------------
+
+
     //moving
     public float horizontalSpeed = 10f; //horizontal movement speed
     
@@ -37,16 +46,14 @@ public class CharacterMovement : MonoBehaviour
 
 	void Update ()
     {
-        if(grounded && Input.GetKeyDown(KeyCode.Mouse0)) //if it is on the ground then jump when key is pressed
-        {
-            Jump();
-            anim.SetTrigger("Jump");
-        }
-
-        if (grounded)
-        {
-            anim.SetTrigger("Land");
-        }
+        if (grounded && Input.GetKeyDown (KeyCode.Mouse0)) { //if it is on the ground then jump when key is pressed
+			anim.SetTrigger ("Jump");
+			Jump ();
+		} else {
+			if (grounded) {
+				anim.SetTrigger ("Land");
+			}
+		}
 
         if (rigidBody.velocity.x < 0)
         {
@@ -59,41 +66,66 @@ public class CharacterMovement : MonoBehaviour
                 facingRight = true;
             }
         }
-	
+			
 	}
     void FixedUpdate()
     {
-        grounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, whatIsGround); //checks if GroundCheck object is colliding with something
-		walled = Physics2D.OverlapArea (wallCheckUR.position, wallCheckBR.position, whatIsGround);
-
-		if (!walled) 
+		//checks if GroundCheck object is colliding with something
+		grounded = CheckForGround ();
+		if (grounded) //Horizontal movement
 		{
-			walled = Physics2D.OverlapArea(wallCheckUL.position, wallCheckBL.position, whatIsGround);
+			Move();
 		}
 
-
-        if (grounded) //Horizontal movement
+		//checks if any of WallCheck objects is colliding with something
+		walled = CheckForWall ();
+		if (walled)
         {
-            Move();
+			walled = false;
+			rigidBody.velocity = new Vector2(-rigidBody.velocity.x, rigidBody.velocity.x);
         }
 
-		if (walled && !grounded)
-        {
-            rigidBody.velocity = new Vector2(-rigidBody.velocity.x, rigidBody.velocity.y);
-        }
-
-        if (rigidBody.velocity.x > 0 && facingRight == false)
-        {
-            Flip();
-        }
-        else
-        {
-            if (rigidBody.velocity.x < 0 && facingRight == true)
-            {
-                Flip();
-            }
-        }
+		if (rigidBody.velocity.x > 0 && facingRight == false)
+		{
+			Flip();
+		}
+		
+		if (rigidBody.velocity.x < 0 && facingRight == true)
+		{
+			Flip();
+		}
     }
+
+	bool CheckForGround ()
+	{
+		if (Physics2D.OverlapCircle (groundCheck.position, groundRadius, whatIsGround) != null) 
+		{
+			return true;
+		} 
+		else 
+		{
+			return false;
+		}
+	}
+
+	bool CheckForWall ()
+	{
+		if (Physics2D.OverlapArea (wallCheckUR.position, wallCheckBR.position, whatIsGround) != null) 
+		{
+			return true;
+		} 
+		else 
+		{
+			if(Physics2D.OverlapArea(wallCheckUL.position, wallCheckBL.position, whatIsGround) != null)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
 
     void Jump()
     {
@@ -112,11 +144,13 @@ public class CharacterMovement : MonoBehaviour
             rigidBody.AddForce(jumping, ForceMode2D.Force);
         }
     }
+
     void Move()
     {
         float move = Input.GetAxis("Horizontal"); //poruszanie się w poziomie
         rigidBody.velocity = new Vector2(move * horizontalSpeed, rigidBody.velocity.y);
     }
+
     void Flip()
     {
         facingRight = !facingRight;
