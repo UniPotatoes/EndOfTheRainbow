@@ -34,6 +34,7 @@ public class CharacterMovement : MonoBehaviour
 
     //facing
     public bool facingRight = true;
+    public bool previousFacingRight = true;
     Animator anim;
 
     void Start ()
@@ -64,12 +65,18 @@ public class CharacterMovement : MonoBehaviour
             {
                 anim.SetBool("onLand", false);          
             }
-		
 
+        // flipping and animation control
         if (rigidBody.velocity.x < 0)
         {
+
             facingRight = false;
             anim.SetBool("walking", true);
+            if (previousFacingRight == true)
+            {
+                Flip();
+            }
+            previousFacingRight = facingRight;
         }
         else
         {
@@ -77,13 +84,17 @@ public class CharacterMovement : MonoBehaviour
             {
                 facingRight = true;
                 anim.SetBool("walking", true);
+                if (previousFacingRight == false)
+                {
+                    Flip();
+                }
+                previousFacingRight = facingRight;
             }
             else
             {
                 anim.SetBool("walking", false);
             }
-        }
-			
+        }		
 	}
     void FixedUpdate()
     {
@@ -101,32 +112,6 @@ public class CharacterMovement : MonoBehaviour
 			walled = false;
 			rigidBody.velocity = new Vector2(-rigidBody.velocity.x, rigidBody.velocity.y);
         }
-
-        
-		if (rigidBody.velocity.x > 0 && facingRight == false)
-		{
-			Flip();
-		}
-		
-		if (rigidBody.velocity.x < 0 && facingRight == true)
-		{
-			Flip();
-		}
-        
-        /*
-        if (rigidBody.velocity.x > 0)
-		{
-            anim.SetBool("facingRight", true);
-        }
-        else
-        {
-            if (rigidBody.velocity.x < 0)
-            {
-                anim.SetBool("facingRight", false);
-            }
-        }
-        */
-    
     }
 
     bool CheckForGround ()
@@ -186,7 +171,7 @@ public class CharacterMovement : MonoBehaviour
 
     void Flip()
     {
-        facingRight = !facingRight;
+        //facingRight = !facingRight;
         Vector3 theScale = transform.localScale;
         theScale.x *= -1;
         transform.localScale = theScale; 
