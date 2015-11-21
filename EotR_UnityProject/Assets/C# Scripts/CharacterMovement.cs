@@ -3,13 +3,6 @@ using System.Collections;
 
 public class CharacterMovement : MonoBehaviour
 {
-	//--------------------
-	//	Debuggin
-	public float velocityX;
-	public float velocityY;
-	//-----------------
-
-
     //moving
     public float horizontalSpeed = 10f; //horizontal movement speed
     
@@ -45,12 +38,6 @@ public class CharacterMovement : MonoBehaviour
 
 	void Update ()
     {
-        //--------------------
-        //	Debuggin
-        velocityX = rigidBody.velocity.x;
-        velocityY = rigidBody.velocity.y;
-	    //-----------------
-
         if (grounded && Input.GetKeyDown (KeyCode.Mouse0)) //if it is on the ground then jump when key is pressed
         {
             anim.SetTrigger("jumped");
@@ -67,7 +54,7 @@ public class CharacterMovement : MonoBehaviour
             }
 
         // flipping and animation control
-        if (rigidBody.velocity.x < 0)
+        if (rigidBody.velocity.x < 0 && !walled)
         {
 
             facingRight = false;
@@ -80,7 +67,7 @@ public class CharacterMovement : MonoBehaviour
         }
         else
         {
-            if (rigidBody.velocity.x > 0)
+			if (rigidBody.velocity.x > 0 && !walled)
             {
                 facingRight = true;
                 anim.SetBool("walking", true);
@@ -105,18 +92,23 @@ public class CharacterMovement : MonoBehaviour
 			Move();
 		}
 
-		//checks if any of WallCheck objects is colliding with something
 		walled = CheckForWall ();
+		/*
+		//checks if any of WallCheck objects is colliding with something
+
 		if (walled)
         {
 			walled = false;
 			rigidBody.velocity = new Vector2(-rigidBody.velocity.x, rigidBody.velocity.y);
         }
+        */
     }
 
     bool CheckForGround ()
 	{
-		if (Physics2D.OverlapCircle (groundCheck.position, groundRadius, whatIsGround) != null) 
+		Vector2 positionBL = wallCheckBL.position;
+		Vector2 positionBR = new Vector2 (wallCheckBR.position.x, wallCheckBR.position.y - 0.1f);
+		if (Physics2D.OverlapArea (positionBL, positionBR, whatIsGround) != null) 
 		{
 			return true;
 		} 
