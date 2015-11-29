@@ -44,10 +44,10 @@ public class JumpingArcPathDisplay : MonoBehaviour {
 		
 		jumpNowX = jumpForce * jumpX * 0.1f; //final horizontal jump force
 		jumpNowY = jumpForce * jumpY * 0.1f; //final vertical jump force
-		if (relativeMouseY > PivotPoint.transform.position.y + 5.0f) { //don't jump down, it's impossible
+
 			Vector2 jumping = new Vector2 (jumpNowX, jumpNowY);
 			rigidBody.AddForce (jumping, ForceMode2D.Impulse);
-		}
+
 	}
 	void OnCollisionEnter2D(Collision2D col)
 	{
