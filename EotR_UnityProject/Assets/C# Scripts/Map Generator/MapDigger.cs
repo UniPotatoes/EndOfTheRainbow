@@ -16,7 +16,7 @@ public class MapDigger : MonoBehaviour
 
     public int roomsToDig = 1;
 
-    public enum RoomType {None = -1, FreeSpace, Room_1x1, Room_1x2, Room_2x1, Room_2x2};
+    public enum RoomType {Occupied = -2, None, FreeSpace, Room_1x1, Room_1x2, Room_2x1, Room_2x2};
 
     public int minWidthOfMap = 0;
 
@@ -57,7 +57,7 @@ public class MapDigger : MonoBehaviour
 
         DigPaths();
 
-        PlaceRooms();
+        PlaceRoomsOnMap();
     }
 
     void InitialiseMap()
@@ -133,7 +133,7 @@ public class MapDigger : MonoBehaviour
     }
 
     //only placing 1x1
-    void PlaceRooms()
+    void PlaceRoomsOnMap()
     {
         if (map != null)
         {
@@ -143,13 +143,19 @@ public class MapDigger : MonoBehaviour
                 {
                     if (map[x, y] == RoomType.FreeSpace)
                     {
-                        Vector3 pos = new Vector3(-mapWidth / 2 + x + .5f, -mapHeight / 2 + y + .5f, 0);
-
-                        GameObject tile = Instantiate(Room_1x1, pos, transform.rotation) as GameObject;
-                        tile.transform.parent = Rooms.transform;
+                        PlaceRoomOnPosition(x, y, RoomType.Room_1x1);
                     }
                 }
             }
         }
+    }
+
+    void PlaceRoomOnPosition(int x, int y, RoomType roomType)
+    {
+        //Vector3 pos = new Vector3(-mapWidth / 2 + x + .5f, -mapHeight / 2 + y + .5f, 0); //Wspolrzedne obliczane tak, by srodek mapy byl w srodku ukladu wspolrzednych
+        Vector3 pos = new Vector3(20*x+10,20*y+10,0);
+        
+        GameObject tile = Instantiate(Room_1x1, pos, transform.rotation) as GameObject;
+        tile.transform.parent = Rooms.transform;
     }
 }
