@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class MapDigger : MonoBehaviour
 {
@@ -19,6 +20,8 @@ public class MapDigger : MonoBehaviour
     public enum RoomType {Occupied = -2, None, FreeSpace, Room_1x1, Room_1x2, Room_2x1, Room_2x2};
 
     public int minWidthOfMap = 0;
+
+    
 
     // Use this for initialization
     void Start()
@@ -56,8 +59,6 @@ public class MapDigger : MonoBehaviour
         InitialiseMap();
 
         DigPaths();
-
-        PlaceRoomsOnMap();
     }
 
     void InitialiseMap()
@@ -74,12 +75,15 @@ public class MapDigger : MonoBehaviour
     }
 
     enum Direction { North, South, West, East };
+
     void DigPaths()
     {
+        List<Direction> dugPath = new List<Direction>(); //stworzenie listy na przechowywanie sciezki ruchu diggera
         bool mapWideEnough = false;
         while (!mapWideEnough)
         {
-            Vector2 diggerPosition = new Vector2(0, mapHeight / 2);
+            dugPath.Clear();
+            Vector2 diggerPosition = new Vector2(0, mapHeight / 2); //pozycja startowa diggera
             ResetMapValues();
             map[(int)diggerPosition.x, (int)diggerPosition.y] = RoomType.FreeSpace;
         
@@ -87,6 +91,7 @@ public class MapDigger : MonoBehaviour
             while (roomsDug < roomsToDig)
             {
                 Direction direction = (Direction)Random.Range(0, 4);
+                dugPath.Add(direction); //dodaj kolejny ruch do listy
                 diggerPosition = MoveDiggerInDirection(diggerPosition, direction);
                 if (map[(int)diggerPosition.x, (int)diggerPosition.y] != RoomType.FreeSpace)
                 {
@@ -96,6 +101,10 @@ public class MapDigger : MonoBehaviour
             }
             mapWideEnough = CheckIfMapIsWiderThan(minWidthOfMap);
         }
+
+        PlaceRoomsOnMap();
+
+        DeleteEntranceBlocks(dugPath);
     }
 
     bool CheckIfMapIsWiderThan(int minWidthOfMap)
@@ -124,10 +133,10 @@ public class MapDigger : MonoBehaviour
         Vector2 diggerMove = Vector2.zero;
         switch (direction)
         {
-            case Direction.North: if(diggerPosition.y < mapHeight-1) diggerMove = Vector2.up; break;
-            case Direction.South: if (diggerPosition.y > 0) diggerMove = Vector2.down; break;
-            case Direction.West: if (diggerPosition.x > 0) diggerMove = Vector2.left; break;
-            case Direction.East: if (diggerPosition.x < mapWidth-1) diggerMove = Vector2.right; break;
+            case Direction.North: { if (diggerPosition.y < mapHeight - 1) diggerMove = Vector2.up; break; }
+            case Direction.South: { if (diggerPosition.y > 0) diggerMove = Vector2.down; break; }
+            case Direction.West: { if (diggerPosition.x > 0) diggerMove = Vector2.left; break; }
+            case Direction.East: { if (diggerPosition.x < mapWidth - 1) diggerMove = Vector2.right; break; }
         }
         return diggerPosition += diggerMove;
     }
@@ -150,6 +159,68 @@ public class MapDigger : MonoBehaviour
         }
     }
 
+    void DeleteEntranceBlocks(List<Direction> dugPath)
+    {
+        Vector2 doorMakerPosition = new Vector2(0, mapHeight / 2);
+        GameObject EntranceToDelete;
+
+        for (int i = 0; i < dugPath.Count; i++)
+        {
+            switch (dugPath[i])
+            {
+                case Direction.North:
+                    {
+                        if (doorMakerPosition.y < mapHeight - 1)
+                        {
+                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("North_Entrance").gameObject;                   
+                            Destroy(EntranceToDelete);
+                            doorMakerPosition += Vector2.up;
+                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("South_Entrance").gameObject;
+                            Destroy(EntranceToDelete);
+                        }
+                        break;
+                    }
+                case Direction.South:
+                    {
+                        if (doorMakerPosition.y > 0)
+                        {
+                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("South_Entrance").gameObject;
+                            Destroy(EntranceToDelete);
+                            doorMakerPosition += Vector2.down;
+                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("North_Entrance").gameObject;
+                            Destroy(EntranceToDelete);
+
+                        }
+                        break;
+                    }
+                case Direction.West:
+                    {
+                        if (doorMakerPosition.x > 0)
+                        {
+                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("West_Entrance").gameObject;
+                            Destroy(EntranceToDelete);
+                            doorMakerPosition += Vector2.left;
+                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("East_Entrance").gameObject;
+                            Destroy(EntranceToDelete);
+                        }
+                        break;
+                    }
+                case Direction.East:
+                    {
+                        if (doorMakerPosition.x < mapWidth - 1)
+                        {
+                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("East_Entrance").gameObject;
+                            Destroy(EntranceToDelete);
+                            doorMakerPosition += Vector2.right;
+                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("West_Entrance").gameObject;
+                            Destroy(EntranceToDelete);
+                        }
+                        break;
+                    }
+            }
+        }
+    }
+
     void PlaceRoomOnPosition(int x, int y, RoomType roomType)
     {
         //Vector3 pos = new Vector3(-mapWidth / 2 + x + .5f, -mapHeight / 2 + y + .5f, 0); //Wspolrzedne obliczane tak, by srodek mapy byl w srodku ukladu wspolrzednych
@@ -157,5 +228,6 @@ public class MapDigger : MonoBehaviour
         
         GameObject tile = Instantiate(Room_1x1, pos, transform.rotation) as GameObject;
         tile.transform.parent = Rooms.transform;
+        tile.transform.name = "Room_1x1_" + x + "," + y;
     }
 }
