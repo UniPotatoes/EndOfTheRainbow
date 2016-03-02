@@ -5,7 +5,7 @@ public class TipEnabler : MonoBehaviour {
     public GameObject UIText;
     public string tipContent;
 
-    void OnTriggerEnter2D(Collider2D other)
+	void OnTriggerEnter2D(Collider2D Player)
     {
         //Debug.Log("Object entered the trigger.");
         UIText.SendMessage("DisplayTip", tipContent);

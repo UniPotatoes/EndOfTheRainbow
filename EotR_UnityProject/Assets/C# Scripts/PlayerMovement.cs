@@ -9,7 +9,7 @@ public class PlayerMovement : MonoBehaviour
 	//wall checking
 	public Transform wallCheckUR, wallCheckBR, wallCheckUL, wallCheckBL;
 	public Transform PivotPoint;
-	[SerializeField]private bool walled;
+	[SerializeField]private bool walled = false;
 	
 	//ground checking
 	public LayerMask whatIsGround; //define what is treated like ground
@@ -65,7 +65,7 @@ public class PlayerMovement : MonoBehaviour
 		}
 		
 		// flipping and animation control
-		if (rigidBody.velocity.x < 0 && !walled)
+		if (rigidBody.velocity.x < 0 /*&& !walled*/)
 		{
 			
 			facingRight = false;
@@ -78,7 +78,7 @@ public class PlayerMovement : MonoBehaviour
 		}
 		else
 		{
-			if (rigidBody.velocity.x > 0 && !walled)
+			if (rigidBody.velocity.x > 0 /*&& !walled*/)
 			{
 				facingRight = true;
 				anim.SetBool("walking", true);
@@ -120,13 +120,15 @@ public class PlayerMovement : MonoBehaviour
 	
 	bool CheckForWall ()
 	{
-		if (Physics2D.OverlapArea (wallCheckUR.position, wallCheckBR.position, whatIsGround) != null) 
+		Vector2 leftWall = new Vector2 (wallCheckBL.position.x, wallCheckBL.position.y + 0.03f);
+		Vector2 rightWall = new Vector2 (wallCheckBR.position.x, wallCheckBR.position.y + 0.03f);
+		if (Physics2D.OverlapArea (wallCheckUR.position, rightWall, whatIsGround) != null) 
 		{
 			return true;
 		} 
 		else 
 		{
-			if(Physics2D.OverlapArea(wallCheckUL.position, wallCheckBL.position, whatIsGround) != null)
+			if(Physics2D.OverlapArea(wallCheckUL.position, leftWall, whatIsGround) != null)
 			{
 				return true;
 			}
