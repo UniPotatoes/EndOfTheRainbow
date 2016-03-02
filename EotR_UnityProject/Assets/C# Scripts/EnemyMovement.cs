@@ -12,7 +12,7 @@ public class EnemyMovement : MonoBehaviour
 
 	//wall checking
 	public Transform wallCheckUR, wallCheckBR, wallCheckUL, wallCheckBL;
-	[SerializeField]private bool wallOnRight = false;
+	[SerializeField]private bool wallOnRight;
 
 	//ground checking
 	public LayerMask whatIsGround; //define what is treated like ground
@@ -40,12 +40,15 @@ public class EnemyMovement : MonoBehaviour
 	void moveTowardsPlayer()
 	{
 		Vector2 velocity = new Vector2 (speedTowardsPlayer, 0);
-		if (this.gameObject.transform.position.x > player.transform.position.x) {
+		if (this.gameObject.transform.position.x > player.transform.position.x) 
+		{
 			rigidBody.velocity = -velocity;
+			wallOnRight = true;
 		} 
 		else 
 		{
 			rigidBody.velocity = velocity;
+			wallOnRight = false;
 		}
 	}
 
@@ -65,12 +68,9 @@ public class EnemyMovement : MonoBehaviour
 		{
 			wallOnRight = true;
 		} 
-		else 
+		if(Physics2D.OverlapArea(wallCheckUL.position, leftWall, whatIsGround) != null)
 		{
-			if(Physics2D.OverlapArea(wallCheckUL.position, leftWall, whatIsGround) != null)
-			{
-				wallOnRight = false;
-			}
+			wallOnRight = false;
 		}
 	}
 }
