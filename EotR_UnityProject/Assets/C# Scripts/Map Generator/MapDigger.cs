@@ -105,7 +105,7 @@ public class MapDigger : MonoBehaviour
 
          PlaceRoomsOnMap();
         
-        // DeleteEntranceBlocks(dugPath);
+         //DeleteEntranceBlocks(dugPath);
     }
 
     bool CheckIfMapIsWiderThan(int minWidthOfMap)
@@ -153,8 +153,8 @@ public class MapDigger : MonoBehaviour
                 {
                     if (map[x, y] == RoomType.FreeSpace)
                     {
-                        PlaceRoomOnPosition(x, y, RoomType.Room_1x1);
-                        //ChooseRoomToPlace(x, y);
+                        //PlaceRoomOnPosition(x, y, RoomType.Room_1x1);
+                        ChooseRoomToPlace(x, y);
                     }
                 }
             }
@@ -165,29 +165,35 @@ public class MapDigger : MonoBehaviour
     {
         bool[] avaliableRooms;
         avaliableRooms = new bool[totalNumberOfRooms + 1];
-        for (int i = 0; i < totalNumberOfRooms + 1; i++) avaliableRooms[i] = true;
+        for (int i = (int)RoomType.Room_1x1; i < totalNumberOfRooms + 1; i++) avaliableRooms[i] = true;
         // choose the room
-        if (x == mapWidth || map[x + 1, y] != RoomType.FreeSpace) avaliableRooms[(int)RoomType.Room_1x2] = false;
-        if (y == 0 || map[x, y - 1] != RoomType.FreeSpace) avaliableRooms[(int)RoomType.Room_2x1] = false;
-        if (x == mapWidth || y == 0 || map[x + 1, y - 1] != RoomType.FreeSpace) avaliableRooms[(int)RoomType.Room_2x2] = false;
+        if (x == mapWidth - 1 || map[x + 1, y] != RoomType.FreeSpace) avaliableRooms[(int)RoomType.Room_1x2] = false;
+        if (y == mapHeight - 1 || map[x, y + 1] != RoomType.FreeSpace) avaliableRooms[(int)RoomType.Room_2x1] = false;
+        if (x == mapWidth - 1 || y == mapHeight - 1 || map[x + 1, y + 1] != RoomType.FreeSpace || map[x + 1, y] != RoomType.FreeSpace || map[x, y + 1] != RoomType.FreeSpace) avaliableRooms[(int)RoomType.Room_2x2] = false;
 
         int numberOfAvaliableRooms = 1;
-        for (int i = 1; i < totalNumberOfRooms; i++) if (avaliableRooms[i] == true) numberOfAvaliableRooms++;
-        int numberToCountProbability = 6; if (numberOfAvaliableRooms != 4) numberToCountProbability = numberOfAvaliableRooms;
+        for (int i = (int)RoomType.Room_1x1; i < totalNumberOfRooms + 1; i++) if (avaliableRooms[i] == true) numberOfAvaliableRooms++;
+        int numberToCountProbability = 6; if (numberOfAvaliableRooms != totalNumberOfRooms) numberToCountProbability = numberOfAvaliableRooms;
 
 
-        RoomType choosedRoom = (RoomType)Random.Range(1, numberToCountProbability);
+        RoomType choosedRoom = RoomType.FreeSpace;
+        while ((int)choosedRoom > totalNumberOfRooms || avaliableRooms[(int)choosedRoom] == false)
+        {
+            choosedRoom = (RoomType)Random.Range(1, numberToCountProbability);
+        }
         //place choosed room
         switch (choosedRoom)
         {
             case RoomType.Room_1x1:
                 {
+                    map[x, y] = RoomType.Room_1x1;
                     PlaceRoomOnPosition(x, y, RoomType.Room_1x1);
                     Debug.Log("1x1");
                     break;
                 }
             case RoomType.Room_1x2:
                 {
+                    map[x, y] = RoomType.Room_1x2;
                     PlaceRoomOnPosition(x, y, RoomType.Room_1x2);
                     map[x + 1, y] = RoomType.Occupied;
                     Debug.Log("1x2");
@@ -195,15 +201,17 @@ public class MapDigger : MonoBehaviour
                 }
             case RoomType.Room_2x1:
                 {
+                    map[x, y] = RoomType.Room_2x1;
                     PlaceRoomOnPosition(x, y, RoomType.Room_2x1);
-                    map[x, y - 1] = RoomType.Occupied;
+                    map[x, y + 1] = RoomType.Occupied;
                     Debug.Log("2x1");
                     break;
                 }
             case RoomType.Room_2x2:
                 {
+                    map[x, y] = RoomType.Room_2x2;
                     PlaceRoomOnPosition(x, y, RoomType.Room_2x2);
-                    map[x + 1, y] = map[x, y - 1] = map[x + 1, y - 1] = RoomType.Occupied;
+                    map[x + 1, y] = map[x, y + 1] = map[x + 1, y + 1] = RoomType.Occupied;
                     Debug.Log("2x2");
                     break;
                 }
@@ -302,6 +310,6 @@ public class MapDigger : MonoBehaviour
         }
         GameObject tile = Instantiate(room, pos, transform.rotation) as GameObject;
         tile.transform.parent = Rooms.transform;
-        tile.transform.name = "Room_1x1_" + x + "," + y;
+        tile.transform.name = roomType.ToString() + "_" + x + "," + y;
     }
 }
