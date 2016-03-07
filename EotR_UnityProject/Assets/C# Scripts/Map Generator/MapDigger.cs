@@ -104,8 +104,9 @@ public class MapDigger : MonoBehaviour
         }
 
          PlaceRoomsOnMap();
-        
-         //DeleteEntranceBlocks(dugPath);
+
+        //DeleteEntranceBlocks(dugPath);
+        DeleteEntranceBlocksUsingRayCast(dugPath);
     }
 
     bool CheckIfMapIsWiderThan(int minWidthOfMap)
@@ -311,5 +312,102 @@ public class MapDigger : MonoBehaviour
         GameObject tile = Instantiate(room, pos, transform.rotation) as GameObject;
         tile.transform.parent = Rooms.transform;
         tile.transform.name = roomType.ToString() + "_" + x + "," + y;
+    }
+
+    void DeleteEntranceBlocksUsingRayCast(List<Direction> dugPath)
+    {
+        Vector2 doorBreakerPosition = new Vector2(0, mapHeight / 2);
+
+        for (int i = 0; i < dugPath.Count; i++)
+        {
+            switch (dugPath[i])
+            {
+                case Direction.North:
+                    {
+                        if (doorBreakerPosition.y < mapHeight - 1)
+                        {
+                            Vector2 pos = new Vector2(doorBreakerPosition.x * 20 + 10, doorBreakerPosition.y * 20 + 10);
+                            RaycastHit2D[] hit = Physics2D.RaycastAll(pos, Vector2.up, 20.0f);
+                            if (hit.Length != 0)
+                            {
+                                foreach (RaycastHit2D element in hit)
+                                {
+                                    if (element.collider.CompareTag("Entrance") )
+                                    {
+                                        Debug.Log("Colliders deleted");
+                                        Destroy(element.collider.gameObject);
+                                    }     
+                                }
+                                
+                            }
+                            doorBreakerPosition += Vector2.up;
+                        }
+                        break;
+                    }
+                case Direction.South:
+                    {
+                        if (doorBreakerPosition.y > 0)
+                        {
+                            Vector2 pos = new Vector2(doorBreakerPosition.x * 20 + 10, doorBreakerPosition.y * 20 + 10);
+                            RaycastHit2D[] hit = Physics2D.RaycastAll(pos, Vector2.down, 20.0f);
+                            if (hit.Length != 0)
+                            {
+                                foreach (RaycastHit2D element in hit)
+                                {
+                                    if (element.collider.CompareTag("Entrance"))
+                                    {
+                                        Debug.Log("Colliders deleted");
+                                        Destroy(element.collider.gameObject);
+                                    }
+                                }
+                            }
+                            doorBreakerPosition += Vector2.down;
+                        }
+                        break;
+                    }
+                case Direction.West:
+                    {
+                        if (doorBreakerPosition.x > 0)
+                        {
+                            Vector2 pos = new Vector2(doorBreakerPosition.x * 20 + 10, doorBreakerPosition.y * 20 + 10);
+                            RaycastHit2D[] hit = Physics2D.RaycastAll(pos, Vector2.left, 20.0f);
+                            if (hit.Length != 0)
+                            {
+                                foreach (RaycastHit2D element in hit)
+                                {
+                                    if (element.collider.CompareTag("Entrance"))
+                                    {
+                                        Debug.Log("Colliders deleted");
+                                        Destroy(element.collider.gameObject);
+                                    }
+                                }
+                            }
+                            doorBreakerPosition += Vector2.left;
+                        }
+                        break;
+                    }
+                case Direction.East:
+                    {
+                        if (doorBreakerPosition.x < mapWidth - 1)
+                        {
+                            Vector2 pos = new Vector2(doorBreakerPosition.x * 20 + 10, doorBreakerPosition.y * 20 + 10);
+                            RaycastHit2D[] hit = Physics2D.RaycastAll(pos, Vector2.right, 20.0f);
+                            if (hit.Length != 0)
+                            {
+                                foreach (RaycastHit2D element in hit)
+                                {
+                                    if (element.collider.CompareTag("Entrance"))
+                                    {
+                                        Debug.Log("Colliders deleted");
+                                        Destroy(element.collider.gameObject);
+                                    }
+                                }
+                            }
+                            doorBreakerPosition += Vector2.right;
+                        }
+                        break;
+                    }
+            }
+        }
     }
 }
