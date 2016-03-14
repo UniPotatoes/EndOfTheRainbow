@@ -300,6 +300,7 @@ public class MapDigger : MonoBehaviour
         DestroyObjectHitWithRaycast(hit);
         return doorBreakerPosition + direction;
     }
+
     void DestroyObjectHitWithRaycast(RaycastHit2D[] hit)
     {
         foreach (RaycastHit2D element in hit)

@@ -9,10 +9,11 @@ public class PlayerMovement : MonoBehaviour
 	//wall checking
 	public Transform wallCheckUR, wallCheckBR, wallCheckUL, wallCheckBL;
 	public Transform PivotPoint;
-	[SerializeField]private bool walled = false;
-	
-	//ground checking
-	public LayerMask whatIsGround; //define what is treated like ground
+	[SerializeField]private bool leftWalled = false;
+    [SerializeField]private bool rightWalled = false;
+
+    //ground checking
+    public LayerMask whatIsGround; //define what is treated like ground
 	float groundRadius = 0.05f;
 	[SerializeField]private bool grounded = false; //is it on the ground
 	
@@ -101,7 +102,8 @@ public class PlayerMovement : MonoBehaviour
 		grounded = CheckForGround ();
 
 		Move();
-		walled = CheckForWall ();
+		leftWalled = CheckForLeftWall ();
+        rightWalled = CheckForRightWall();
 	}
 	
 	bool CheckForGround ()
@@ -118,28 +120,35 @@ public class PlayerMovement : MonoBehaviour
 		}
 	}
 	
-	bool CheckForWall ()
+	bool CheckForLeftWall ()
 	{
 		Vector2 leftWall = new Vector2 (wallCheckBL.position.x, wallCheckBL.position.y + 0.03f);
-		Vector2 rightWall = new Vector2 (wallCheckBR.position.x, wallCheckBR.position.y + 0.03f);
-		if (Physics2D.OverlapArea (wallCheckUR.position, rightWall, whatIsGround) != null) 
+		
+		if(Physics2D.OverlapArea(wallCheckUL.position, leftWall, whatIsGround) != null)
 		{
 			return true;
-		} 
-		else 
+		}
+		else
 		{
-			if(Physics2D.OverlapArea(wallCheckUL.position, leftWall, whatIsGround) != null)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+			return false;
 		}
 	}
-	
-	void Jump()
+
+    bool CheckForRightWall()
+    {
+        Vector2 rightWall = new Vector2(wallCheckBR.position.x, wallCheckBR.position.y + 0.03f);
+        if (Physics2D.OverlapArea(wallCheckUR.position, rightWall, whatIsGround) != null)
+        {
+            return true;
+        }
+        else
+        {
+
+            return false;          
+        }
+    }
+
+    void Jump()
 	{
 		jumpingForce.x = 0.0f;
 		jumpingForce.y = jumpForce;
@@ -150,7 +159,17 @@ public class PlayerMovement : MonoBehaviour
 	{
 		float move = Input.GetAxis ("Horizontal") * horizontalSpeed; //poruszanie się w poziomie
 
-		rigidBody.velocity = new Vector2(move, rigidBody.velocity.y);
+        if (move > 0 && !rightWalled)
+        {
+            rigidBody.velocity = new Vector2(move, rigidBody.velocity.y);
+        }
+        else
+        {
+            if (move < 0 && !leftWalled)
+            {
+                rigidBody.velocity = new Vector2(move, rigidBody.velocity.y);
+            }
+        }	
 	}
 	
 	void Flip()
