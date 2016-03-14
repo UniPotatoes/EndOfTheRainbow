@@ -103,9 +103,8 @@ public class MapDigger : MonoBehaviour
             mapWideEnough = CheckIfMapIsWiderThan(minWidthOfMap);
         }
 
-         PlaceRoomsOnMap();
+        PlaceRoomsOnMap();
 
-        //DeleteEntranceBlocks(dugPath);
         DeleteEntranceBlocksUsingRayCast(dugPath);
     }
 
@@ -143,7 +142,6 @@ public class MapDigger : MonoBehaviour
         return diggerPosition += diggerMove;
     }
 
-    //only placing 1x1
     void PlaceRoomsOnMap()
     {
         if (map != null)
@@ -154,7 +152,6 @@ public class MapDigger : MonoBehaviour
                 {
                     if (map[x, y] == RoomType.FreeSpace)
                     {
-                        //PlaceRoomOnPosition(x, y, RoomType.Room_1x1);
                         ChooseRoomToPlace(x, y);
                     }
                 }
@@ -222,68 +219,6 @@ public class MapDigger : MonoBehaviour
         }
     }
 
-    void DeleteEntranceBlocks(List<Direction> dugPath)
-    {
-        Vector2 doorMakerPosition = new Vector2(0, mapHeight / 2);
-        GameObject EntranceToDelete;
-
-        for (int i = 0; i < dugPath.Count; i++)
-        {
-            switch (dugPath[i])
-            {
-                case Direction.North:
-                    {
-                        if (doorMakerPosition.y < mapHeight - 1)
-                        {
-                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("North_Entrance").gameObject;                   
-                            Destroy(EntranceToDelete);
-                            doorMakerPosition += Vector2.up;
-                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("South_Entrance").gameObject;
-                            Destroy(EntranceToDelete);
-                        }
-                        break;
-                    }
-                case Direction.South:
-                    {
-                        if (doorMakerPosition.y > 0)
-                        {
-                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("South_Entrance").gameObject;
-                            Destroy(EntranceToDelete);
-                            doorMakerPosition += Vector2.down;
-                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("North_Entrance").gameObject;
-                            Destroy(EntranceToDelete);
-
-                        }
-                        break;
-                    }
-                case Direction.West:
-                    {
-                        if (doorMakerPosition.x > 0)
-                        {
-                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("West_Entrance").gameObject;
-                            Destroy(EntranceToDelete);
-                            doorMakerPosition += Vector2.left;
-                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("East_Entrance").gameObject;
-                            Destroy(EntranceToDelete);
-                        }
-                        break;
-                    }
-                case Direction.East:
-                    {
-                        if (doorMakerPosition.x < mapWidth - 1)
-                        {
-                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("East_Entrance").gameObject;
-                            Destroy(EntranceToDelete);
-                            doorMakerPosition += Vector2.right;
-                            EntranceToDelete = Rooms.transform.FindChild("Room_1x1_" + (int)doorMakerPosition.x + "," + (int)doorMakerPosition.y).transform.FindChild("West_Entrance").gameObject;
-                            Destroy(EntranceToDelete);
-                        }
-                        break;
-                    }
-            }
-        }
-    }
-
     void PlaceRoomOnPosition(float x, float y, RoomType roomType)
     {
         //Vector3 pos = new Vector3(-mapWidth / 2 + x + .5f, -mapHeight / 2 + y + .5f, 0); //Wspolrzedne obliczane tak, by srodek mapy byl w srodku ukladu wspolrzednych
@@ -317,30 +252,16 @@ public class MapDigger : MonoBehaviour
     void DeleteEntranceBlocksUsingRayCast(List<Direction> dugPath)
     {
         Vector2 doorBreakerPosition = new Vector2(0, mapHeight / 2);
-
-        for (int i = 0; i < dugPath.Count; i++)
+        
+        foreach (Direction element in dugPath)
         {
-            switch (dugPath[i])
+            switch (element)
             {
                 case Direction.North:
                     {
                         if (doorBreakerPosition.y < mapHeight - 1)
                         {
-                            Vector2 pos = new Vector2(doorBreakerPosition.x * 20 + 10, doorBreakerPosition.y * 20 + 10);
-                            RaycastHit2D[] hit = Physics2D.RaycastAll(pos, Vector2.up, 20.0f);
-                            if (hit.Length != 0)
-                            {
-                                foreach (RaycastHit2D element in hit)
-                                {
-                                    if (element.collider.CompareTag("Entrance") )
-                                    {
-                                        Debug.Log("Colliders deleted");
-                                        Destroy(element.collider.gameObject);
-                                    }     
-                                }
-                                
-                            }
-                            doorBreakerPosition += Vector2.up;
+                            doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.up);  
                         }
                         break;
                     }
@@ -348,20 +269,7 @@ public class MapDigger : MonoBehaviour
                     {
                         if (doorBreakerPosition.y > 0)
                         {
-                            Vector2 pos = new Vector2(doorBreakerPosition.x * 20 + 10, doorBreakerPosition.y * 20 + 10);
-                            RaycastHit2D[] hit = Physics2D.RaycastAll(pos, Vector2.down, 20.0f);
-                            if (hit.Length != 0)
-                            {
-                                foreach (RaycastHit2D element in hit)
-                                {
-                                    if (element.collider.CompareTag("Entrance"))
-                                    {
-                                        Debug.Log("Colliders deleted");
-                                        Destroy(element.collider.gameObject);
-                                    }
-                                }
-                            }
-                            doorBreakerPosition += Vector2.down;
+                            doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.down);
                         }
                         break;
                     }
@@ -369,20 +277,7 @@ public class MapDigger : MonoBehaviour
                     {
                         if (doorBreakerPosition.x > 0)
                         {
-                            Vector2 pos = new Vector2(doorBreakerPosition.x * 20 + 10, doorBreakerPosition.y * 20 + 10);
-                            RaycastHit2D[] hit = Physics2D.RaycastAll(pos, Vector2.left, 20.0f);
-                            if (hit.Length != 0)
-                            {
-                                foreach (RaycastHit2D element in hit)
-                                {
-                                    if (element.collider.CompareTag("Entrance"))
-                                    {
-                                        Debug.Log("Colliders deleted");
-                                        Destroy(element.collider.gameObject);
-                                    }
-                                }
-                            }
-                            doorBreakerPosition += Vector2.left;
+                            doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.left);
                         }
                         break;
                     }
@@ -390,23 +285,28 @@ public class MapDigger : MonoBehaviour
                     {
                         if (doorBreakerPosition.x < mapWidth - 1)
                         {
-                            Vector2 pos = new Vector2(doorBreakerPosition.x * 20 + 10, doorBreakerPosition.y * 20 + 10);
-                            RaycastHit2D[] hit = Physics2D.RaycastAll(pos, Vector2.right, 20.0f);
-                            if (hit.Length != 0)
-                            {
-                                foreach (RaycastHit2D element in hit)
-                                {
-                                    if (element.collider.CompareTag("Entrance"))
-                                    {
-                                        Debug.Log("Colliders deleted");
-                                        Destroy(element.collider.gameObject);
-                                    }
-                                }
-                            }
-                            doorBreakerPosition += Vector2.right;
+                            doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.right);
                         }
                         break;
                     }
+            }
+        }
+    }
+
+    Vector2 MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(Vector2 doorBreakerPosition, Vector2 direction)
+    {
+        Vector2 pos = new Vector2(doorBreakerPosition.x * 20 + 10, doorBreakerPosition.y * 20 + 10);
+        RaycastHit2D[] hit = Physics2D.RaycastAll(pos, direction, 20.0f);
+        DestroyObjectHitWithRaycast(hit);
+        return doorBreakerPosition + direction;
+    }
+    void DestroyObjectHitWithRaycast(RaycastHit2D[] hit)
+    {
+        foreach (RaycastHit2D element in hit)
+        {
+            if (element.collider.CompareTag("Entrance"))
+            {
+                Destroy(element.collider.gameObject);
             }
         }
     }
