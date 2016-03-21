@@ -159,7 +159,7 @@ public class PlayerMovement : MonoBehaviour
 	{
 		float move = Input.GetAxis ("Horizontal") * horizontalSpeed; //poruszanie się w poziomie
 
-        if (move > 0 && !rightWalled)
+        if (move > 0 && !leftWalled)
         {
             rigidBody.velocity = new Vector2(move, rigidBody.velocity.y);
         }

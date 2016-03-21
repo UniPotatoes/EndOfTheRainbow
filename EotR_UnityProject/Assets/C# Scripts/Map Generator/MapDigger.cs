@@ -22,7 +22,8 @@ public class MapDigger : MonoBehaviour
 
     public int minWidthOfMap = 0;
 
-    
+    public GameObject Player;
+    public GameObject Camera;
 
     // Use this for initialization
     void Start()
@@ -32,6 +33,7 @@ public class MapDigger : MonoBehaviour
             minWidthOfMap = (int)(mapWidth * 0.5f);
         }
         GenerateMap();
+        SpawnPlayer();
     }
 
     // Update is called once per frame
@@ -53,6 +55,7 @@ public class MapDigger : MonoBehaviour
         }
 
         GenerateMap();
+        SpawnPlayer();
     }
 
     void GenerateMap()
@@ -186,7 +189,7 @@ public class MapDigger : MonoBehaviour
                 {
                     map[x, y] = RoomType.Room_1x1;
                     PlaceRoomOnPosition(x, y, RoomType.Room_1x1);
-                    Debug.Log("1x1");
+                    //Debug.Log("1x1");
                     break;
                 }
             case RoomType.Room_1x2:
@@ -194,7 +197,7 @@ public class MapDigger : MonoBehaviour
                     map[x, y] = RoomType.Room_1x2;
                     PlaceRoomOnPosition(x, y, RoomType.Room_1x2);
                     map[x + 1, y] = RoomType.Occupied;
-                    Debug.Log("1x2");
+                    //Debug.Log("1x2");
                     break;
                 }
             case RoomType.Room_2x1:
@@ -202,7 +205,7 @@ public class MapDigger : MonoBehaviour
                     map[x, y] = RoomType.Room_2x1;
                     PlaceRoomOnPosition(x, y, RoomType.Room_2x1);
                     map[x, y + 1] = RoomType.Occupied;
-                    Debug.Log("2x1");
+                    //Debug.Log("2x1");
                     break;
                 }
             case RoomType.Room_2x2:
@@ -210,7 +213,7 @@ public class MapDigger : MonoBehaviour
                     map[x, y] = RoomType.Room_2x2;
                     PlaceRoomOnPosition(x, y, RoomType.Room_2x2);
                     map[x + 1, y] = map[x, y + 1] = map[x + 1, y + 1] = RoomType.Occupied;
-                    Debug.Log("2x2");
+                    //Debug.Log("2x2");
                     break;
                 }
             default:
@@ -310,5 +313,18 @@ public class MapDigger : MonoBehaviour
                 Destroy(element.collider.gameObject);
             }
         }
+    }
+
+    void SpawnPlayer()
+    {
+        Vector3 pos = new Vector3(10, 1020, 0);
+        Instantiate(Player, pos, transform.rotation);
+        Instantiate(Camera, pos, transform.rotation);
+    }
+
+
+    public RoomType GetRoomTypeOnPosition(Vector2 coordinatesOfRoom)
+    {
+        return map[(int)coordinatesOfRoom.x, (int)coordinatesOfRoom.y];
     }
 }
