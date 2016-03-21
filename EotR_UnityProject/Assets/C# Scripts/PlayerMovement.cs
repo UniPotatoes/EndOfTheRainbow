@@ -143,7 +143,6 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-
             return false;          
         }
     }
@@ -180,21 +179,3 @@ public class PlayerMovement : MonoBehaviour
 		transform.localScale = theScale; 
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

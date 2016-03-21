@@ -7,28 +7,23 @@ public class MapDigger : MonoBehaviour
     public int mapWidth;
     public int mapHeight;
 
-    public RoomType[,] map;
-
-    public GameObject Rooms;
-    public GameObject Room_1x1;
-    public GameObject Room_1x2;
-    public GameObject Room_2x1;
-    public GameObject Room_2x2;
-    public int totalNumberOfRooms = 4; // change if addedroom
+    public Room.Type[,] map;
+    
+    public List<Room> roomList;
 
     public int roomsToDig = 1;
 
-    public enum RoomType {Occupied = -2, None, FreeSpace, Room_1x1, Room_1x2, Room_2x1, Room_2x2};
-
     public int minWidthOfMap = 0;
 
+    GameObject RoomContainer;
     public GameObject Player;
     public GameObject Camera;
 
-    // Use this for initialization
     void Start()
     {
-        if(minWidthOfMap == 0)
+        RoomContainer = new GameObject(); RoomContainer.transform.position = Vector3.zero; RoomContainer.name = "Rooms";
+        
+        if (minWidthOfMap == 0)
         {
             minWidthOfMap = (int)(mapWidth * 0.5f);
         }
@@ -36,7 +31,6 @@ public class MapDigger : MonoBehaviour
         SpawnPlayer();
     }
 
-    // Update is called once per frame
     void Update()
     {
         //r - resetowanie mapy, Debug
@@ -55,7 +49,6 @@ public class MapDigger : MonoBehaviour
         }
 
         GenerateMap();
-        SpawnPlayer();
     }
 
     void GenerateMap()
@@ -67,7 +60,7 @@ public class MapDigger : MonoBehaviour
 
     void InitialiseMap()
     {
-        map = new RoomType[mapWidth, mapHeight];
+        map = new Room.Type[mapWidth, mapHeight];
         ResetMapValues();
     }
 
@@ -75,13 +68,14 @@ public class MapDigger : MonoBehaviour
     {
         for(int i = 0; i < mapWidth; i++)
             for (int j = 0; j < mapHeight; j++)
-                map[i, j] = RoomType.None;
+                map[i, j] = Room.Type.None;
     }
 
     enum Direction { North, South, West, East };
 
     void DigPaths()
     {
+        Vector2 diggerMove;
         List<Direction> dugPath = new List<Direction>(); //stworzenie listy na przechowywanie sciezki ruchu diggera
         bool mapWideEnough = false;
         while (!mapWideEnough)
@@ -89,17 +83,22 @@ public class MapDigger : MonoBehaviour
             dugPath.Clear();
             Vector2 diggerPosition = new Vector2(0, mapHeight / 2); //pozycja startowa diggera
             ResetMapValues();
-            map[(int)diggerPosition.x, (int)diggerPosition.y] = RoomType.FreeSpace;
+            map[(int)diggerPosition.x, (int)diggerPosition.y] = Room.Type.FreeSpace;
         
             int roomsDug = 1;
             while (roomsDug < roomsToDig)
             {
                 Direction direction = (Direction)Random.Range(0, 4);
-                dugPath.Add(direction); //dodaj kolejny ruch do listy
-                diggerPosition = MoveDiggerInDirection(diggerPosition, direction);
-                if (map[(int)diggerPosition.x, (int)diggerPosition.y] != RoomType.FreeSpace)
+                
+                diggerMove = MoveDiggerInDirection(diggerPosition, direction);
+                if (diggerMove != Vector2.zero)
                 {
-                    map[(int)diggerPosition.x, (int)diggerPosition.y] = RoomType.FreeSpace;
+                    dugPath.Add(direction); //dodaj kolejny ruch do listy
+                    diggerPosition += diggerMove;
+                }               
+                if (map[(int)diggerPosition.x, (int)diggerPosition.y] != Room.Type.FreeSpace)
+                {
+                    map[(int)diggerPosition.x, (int)diggerPosition.y] = Room.Type.FreeSpace;
                     roomsDug += 1;
                 }
             }
@@ -118,7 +117,7 @@ public class MapDigger : MonoBehaviour
         {
             for (int i = mapWidth-1; i > 0; i--)
             {
-                if (map[i, j] == RoomType.FreeSpace)
+                if (map[i, j] == Room.Type.FreeSpace)
                 {
                     indexOfMostRightRoom = i;
                     break;
@@ -142,7 +141,7 @@ public class MapDigger : MonoBehaviour
             case Direction.West: { if (diggerPosition.x > 0) diggerMove = Vector2.left; break; }
             case Direction.East: { if (diggerPosition.x < mapWidth - 1) diggerMove = Vector2.right; break; }
         }
-        return diggerPosition += diggerMove;
+        return diggerMove;
     }
 
     void PlaceRoomsOnMap()
@@ -153,7 +152,7 @@ public class MapDigger : MonoBehaviour
             {
                 for (int y = 0; y < mapHeight; y++)
                 {
-                    if (map[x, y] == RoomType.FreeSpace)
+                    if (map[x, y] == Room.Type.FreeSpace)
                     {
                         ChooseRoomToPlace(x, y);
                     }
@@ -165,55 +164,51 @@ public class MapDigger : MonoBehaviour
     void ChooseRoomToPlace(int x, int y)
     {
         bool[] avaliableRooms;
-        avaliableRooms = new bool[totalNumberOfRooms + 1];
-        for (int i = (int)RoomType.Room_1x1; i < totalNumberOfRooms + 1; i++) avaliableRooms[i] = true;
+        avaliableRooms = new bool[roomList.Count + 1];
+        for (int i = (int)Room.Type._1x1; i < roomList.Count + 1; i++) avaliableRooms[i] = true;
         // choose the room
-        if (x == mapWidth - 1 || map[x + 1, y] != RoomType.FreeSpace) avaliableRooms[(int)RoomType.Room_1x2] = false;
-        if (y == mapHeight - 1 || map[x, y + 1] != RoomType.FreeSpace) avaliableRooms[(int)RoomType.Room_2x1] = false;
-        if (x == mapWidth - 1 || y == mapHeight - 1 || map[x + 1, y + 1] != RoomType.FreeSpace || map[x + 1, y] != RoomType.FreeSpace || map[x, y + 1] != RoomType.FreeSpace) avaliableRooms[(int)RoomType.Room_2x2] = false;
+        if (x == mapWidth - 1 || map[x + 1, y] != Room.Type.FreeSpace) avaliableRooms[(int)Room.Type._1x2] = false;
+        if (y == mapHeight - 1 || map[x, y + 1] != Room.Type.FreeSpace) avaliableRooms[(int)Room.Type._2x1] = false;
+        if (x == mapWidth - 1 || y == mapHeight - 1 || map[x + 1, y + 1] != Room.Type.FreeSpace || map[x + 1, y] != Room.Type.FreeSpace || map[x, y + 1] != Room.Type.FreeSpace) avaliableRooms[(int)Room.Type._2x2] = false;
 
         int numberOfAvaliableRooms = 1;
-        for (int i = (int)RoomType.Room_1x1; i < totalNumberOfRooms + 1; i++) if (avaliableRooms[i] == true) numberOfAvaliableRooms++;
-        int numberToCountProbability = 6; if (numberOfAvaliableRooms != totalNumberOfRooms) numberToCountProbability = numberOfAvaliableRooms;
+        for (int i = (int)Room.Type._1x1; i < roomList.Count + 1; i++) if (avaliableRooms[i] == true) numberOfAvaliableRooms++;
+        int numberToCountProbability = 6; if (numberOfAvaliableRooms != roomList.Count) numberToCountProbability = numberOfAvaliableRooms;
 
 
-        RoomType choosedRoom = RoomType.FreeSpace;
-        while ((int)choosedRoom > totalNumberOfRooms || avaliableRooms[(int)choosedRoom] == false)
+        Room.Type choosedRoom = Room.Type.FreeSpace;
+        while ((int)choosedRoom > roomList.Count || avaliableRooms[(int)choosedRoom] == false)
         {
-            choosedRoom = (RoomType)Random.Range(1, numberToCountProbability);
+            choosedRoom = (Room.Type)Random.Range(1, numberToCountProbability);
         }
         //place choosed room
         switch (choosedRoom)
         {
-            case RoomType.Room_1x1:
+            case Room.Type._1x1:
                 {
-                    map[x, y] = RoomType.Room_1x1;
-                    PlaceRoomOnPosition(x, y, RoomType.Room_1x1);
-                    //Debug.Log("1x1");
+                    map[x, y] = Room.Type._1x1;
+                    PlaceRoomOnPosition(x, y, Room.Type._1x1);
                     break;
                 }
-            case RoomType.Room_1x2:
+            case Room.Type._1x2:
                 {
-                    map[x, y] = RoomType.Room_1x2;
-                    PlaceRoomOnPosition(x, y, RoomType.Room_1x2);
-                    map[x + 1, y] = RoomType.Occupied;
-                    //Debug.Log("1x2");
+                    map[x, y] = Room.Type._1x2;
+                    PlaceRoomOnPosition(x, y, Room.Type._1x2);
+                    map[x + 1, y] = Room.Type.Occupied;
                     break;
                 }
-            case RoomType.Room_2x1:
+            case Room.Type._2x1:
                 {
-                    map[x, y] = RoomType.Room_2x1;
-                    PlaceRoomOnPosition(x, y, RoomType.Room_2x1);
-                    map[x, y + 1] = RoomType.Occupied;
-                    //Debug.Log("2x1");
+                    map[x, y] = Room.Type._2x1;
+                    PlaceRoomOnPosition(x, y, Room.Type._2x1);
+                    map[x, y + 1] = Room.Type.Occupied;
                     break;
                 }
-            case RoomType.Room_2x2:
+            case Room.Type._2x2:
                 {
-                    map[x, y] = RoomType.Room_2x2;
-                    PlaceRoomOnPosition(x, y, RoomType.Room_2x2);
-                    map[x + 1, y] = map[x, y + 1] = map[x + 1, y + 1] = RoomType.Occupied;
-                    //Debug.Log("2x2");
+                    map[x, y] = Room.Type._2x2;
+                    PlaceRoomOnPosition(x, y, Room.Type._2x2);
+                    map[x + 1, y] = map[x, y + 1] = map[x + 1, y + 1] = Room.Type.Occupied;
                     break;
                 }
             default:
@@ -222,33 +217,31 @@ public class MapDigger : MonoBehaviour
         }
     }
 
-    void PlaceRoomOnPosition(float x, float y, RoomType roomType)
+    void PlaceRoomOnPosition(float x, float y, Room.Type roomType)
     {
-        //Vector3 pos = new Vector3(-mapWidth / 2 + x + .5f, -mapHeight / 2 + y + .5f, 0); //Wspolrzedne obliczane tak, by srodek mapy byl w srodku ukladu wspolrzednych
         Vector3 pos = new Vector3(20*x+10,20*y+10,0);
-        GameObject room = Room_1x1;
+        GameObject room = roomList[0].room;
 
         switch (roomType)
         {
-            case RoomType.Room_1x2:
+            case Room.Type._1x2:
                 {
-                    room = Room_1x2;
+                    room = roomList[1].room;
                     break;
                 }
-            case RoomType.Room_2x1:
+            case Room.Type._2x1:
                 {
-                    room = Room_2x1;
+                    room = roomList[2].room;
                     break;
                 }
-            case RoomType.Room_2x2:
+            case Room.Type._2x2:
                 {
-                    room = Room_2x2;
+                    room = roomList[3].room;
                     break;
                 }
-
         }
         GameObject tile = Instantiate(room, pos, transform.rotation) as GameObject;
-        tile.transform.parent = Rooms.transform;
+        tile.transform.parent = RoomContainer.transform;
         tile.transform.name = roomType.ToString() + "_" + x + "," + y;
     }
 
@@ -262,34 +255,22 @@ public class MapDigger : MonoBehaviour
             {
                 case Direction.North:
                     {
-                        if (doorBreakerPosition.y < mapHeight - 1)
-                        {
-                            doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.up);  
-                        }
+                        doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.up);  
                         break;
                     }
                 case Direction.South:
                     {
-                        if (doorBreakerPosition.y > 0)
-                        {
-                            doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.down);
-                        }
+                        doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.down);
                         break;
                     }
                 case Direction.West:
                     {
-                        if (doorBreakerPosition.x > 0)
-                        {
-                            doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.left);
-                        }
+                        doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.left);
                         break;
                     }
                 case Direction.East:
                     {
-                        if (doorBreakerPosition.x < mapWidth - 1)
-                        {
-                            doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.right);
-                        }
+                        doorBreakerPosition = MoveDoorBreakerInDirectionAndDestroyAllEntranceObjectsOnItsWay(doorBreakerPosition, Vector2.right);
                         break;
                     }
             }
@@ -317,13 +298,13 @@ public class MapDigger : MonoBehaviour
 
     void SpawnPlayer()
     {
-        Vector3 pos = new Vector3(10, 1020, 0);
+        Vector3 pos = new Vector3(0, 0, 0);
         Instantiate(Player, pos, transform.rotation);
         Instantiate(Camera, pos, transform.rotation);
+        Player.transform.position = new Vector3(100, 1010, 0);
     }
 
-
-    public RoomType GetRoomTypeOnPosition(Vector2 coordinatesOfRoom)
+    public Room.Type GetRoomTypeOnPosition(Vector2 coordinatesOfRoom)
     {
         return map[(int)coordinatesOfRoom.x, (int)coordinatesOfRoom.y];
     }

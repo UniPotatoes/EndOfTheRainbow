@@ -26,16 +26,16 @@ public class CameraFollow : MonoBehaviour {
 
     void ChangedRoom(Vector3 parametrs) //x-roomPosition.x; y-roomPosition.y; z-roomType  
     {
-        MapDigger.RoomType roomType = (MapDigger.RoomType)parametrs.z;
+        Room.Type roomType = (Room.Type)parametrs.z;
         Vector2 roomPosition = new Vector2(parametrs.x, parametrs.y);
 
         minCameraPosition = new Vector2(roomPosition.x - maxCameraDisplacement.x, roomPosition.y - maxCameraDisplacement.y);
         maxCameraPosition = new Vector2(roomPosition.x + maxCameraDisplacement.x, roomPosition.y + maxCameraDisplacement.y);
         switch (roomType)
         {
-            case MapDigger.RoomType.Room_1x2: { maxCameraPosition.x += 20; break; }
-            case MapDigger.RoomType.Room_2x1: { maxCameraPosition.y += 20; break; }
-            case MapDigger.RoomType.Room_2x2: { maxCameraPosition.x += 20; maxCameraPosition.y += 20; break; }
+            case Room.Type._1x2: { maxCameraPosition.x += 20; break; }
+            case Room.Type._2x1: { maxCameraPosition.y += 20; break; }
+            case Room.Type._2x2: { maxCameraPosition.x += 20; maxCameraPosition.y += 20; break; }
         }
     }
 }
